@@ -5,62 +5,72 @@ section .bss
 tita resb 256
 
 section .data
-spckey db 0
 pos_tita db 0
-up db 0x48
-down db 0x50
-left db 0x4B
-right db 0x4D
-ent db 0x1B
+keyflag db 0
 
 section .text
 global start
 start:
     call getchar
     call putchar_cursor
-    call store
-    ;call printcmd
+    ;call store
+    mov bx, tita
     jmp start
 
 getchar:
     xor ax,ax
     int 0x16
-    call checkchar
     ret
 
-checkchar:
-    cmp ah, [left]
-    mov byte [spckey], -1
-    je handle_cursor    
+_checkchar:
+    cmp ah, 0x4B
+    je _setleft
+    cmp ah, 0x4D
+    je _setright  
     ret
 
-handle_cursor:
-    call get_cursor
-    call set_cursor
-    mov byte [spckey], 0
+_setleft:
+    call getcursor
+    cmp dl, 0
+    je _exit_char
+    dec dl
+    call setcursor
     ret
-    
-get_cursor:
+
+_setright:
+    call getcursor    
+    cmp dl, 63
+    je _exit_char
+    inc dl
+    call setcursor
+    ret
+
+_exit_char:
+    mov ah, -1
+    ret
+
+getcursor:
     mov ah, 0x03
     mov bh, 0x00
     int 0x10
     ret
 
-set_cursor:
+setcursor:
     mov ah, 0x02
-    add di, [spckey]
     int 0x10
     ret
 
 putchar_cursor:
-    cmp byte [spckey], 0
-    jne putchar_cursor_end
+    call _checkchar
+    cmp ah, 0x02
+    je _exit
+    cmp ah, -1
+    je _exit
     mov ah, 0x0E ;aca va la funcion a ejecutar, 0E imprime un caracter
     mov bh, 0x00 ;en los registros que siguen van los argumentos de la funcion, 00 es el numero de pagina
     mov bl, 0x20 ;el formato del texto
-
     int 0x10
-putchar_cursor_end:
+    call store
     ret
 
 store:
@@ -81,6 +91,8 @@ loop1:
     loop loop1
     ret
     
+_exit:
+    ret
 
 ;END NO TOCAR
 times 510-($-$$) db 0
