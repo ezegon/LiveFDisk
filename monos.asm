@@ -1,12 +1,13 @@
 [BITS 16]
 [ORG 0x7C00]
 
-section .bss
-tita resb 256
+;section .bss
+;tita resb 256
 
 section .data
 pos_tita db 0
 keyflag db 0
+tita times 256  db "\0"
 
 section .text
 global start
@@ -62,7 +63,7 @@ setcursor:
 
 putchar_cursor:
     call _checkchar
-    cmp ah, 0x02
+    cmp ah, 0x02 ;nos fijamos si nos movimos
     je _exit
     cmp ah, -1
     je _exit
@@ -75,11 +76,16 @@ putchar_cursor:
 
 store:
     cld
-    mov si, [pos_tita]
-    mov di, tita
+    xor di, di
+    call getcursor
+    cmp di, 0
+    jle _sigue1
+    dec byte di
+_sigue1:
+    mov si, tita
     add di, si
-    inc byte [pos_tita]
     stosb
+    inc byte [pos_tita]
     ret
 
 printcmd:
