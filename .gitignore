@@ -1,2 +1,6 @@
 *.bin
 *.qcow
+
+src/
+
+tp_fdisk\.pdf

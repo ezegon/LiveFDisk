@@ -1,105 +1,31 @@
 [BITS 16]
 [ORG 0x7C00]
 
-;section .bss
-;tita resb 256
-
-section .data
-pos_tita db 0
-keyflag db 0
-tita times 256  db "\0"
-
 section .text
 global start
 start:
-    call getchar
-    call putchar_cursor
-    ;call store
-    mov bx, tita
-    jmp start
-
-getchar:
-    xor ax,ax
-    int 0x16
-    ret
-
-_checkchar:
-    cmp ah, 0x4B
-    je _setleft
-    cmp ah, 0x4D
-    je _setright  
-    ret
-
-_setleft:
-    call getcursor
-    cmp dl, 0
-    je _exit_char
-    dec dl
-    call setcursor
-    ret
-
-_setright:
-    call getcursor    
-    cmp dl, 63
-    je _exit_char
-    inc dl
-    call setcursor
-    ret
-
-_exit_char:
-    mov ah, -1
-    ret
-
-getcursor:
-    mov ah, 0x03
-    mov bh, 0x00
-    int 0x10
-    ret
-
-setcursor:
-    mov ah, 0x02
-    int 0x10
-    ret
-
-putchar_cursor:
-    call _checkchar
-    cmp ah, 0x02 ;nos fijamos si nos movimos
-    je _exit
-    cmp ah, -1
-    je _exit
-    mov ah, 0x0E ;aca va la funcion a ejecutar, 0E imprime un caracter
-    mov bh, 0x00 ;en los registros que siguen van los argumentos de la funcion, 00 es el numero de pagina
-    mov bl, 0x20 ;el formato del texto
-    int 0x10
-    call store
-    ret
-
-store:
-    cld
-    xor di, di
-    call getcursor
-    cmp di, 0
-    jle _sigue1
-    dec byte di
-_sigue1:
-    mov si, tita
-    add di, si
-    stosb
-    inc byte [pos_tita]
-    ret
-
-printcmd:
-    mov cx, [pos_tita]
-loop1:
-    mov si, cx
-    mov al, [tita+si]
-    call putchar_cursor
-    loop loop1
-    ret
+    xor ax, ax ;Clear ax
+    mov ah, 0x02 ;Read sectors
+    mov al, 1 ;Read one sector
+    mov ch, 0 ;Cylinder 0
+    mov cl, 1 ;First Sector
+    mov dh, 0 ;Head 0
+    mov dl, 0x80 ;HDD #0
+    mov es, 0x9000 ;Save buffer in 0x9000
+    xor bx,bx ;Clear bx
+    int 0x13 ;Drives interrupt
+    jc reading_error
     
-_exit:
-    ret
+read_sectors:
+    mov bx, 0x01BE
+    mov 
 
+reading_error:
+
+
+;Variables
+partition_count db 0
+    
 ;END NO TOCAR
 times 510-($-$$) db 0
 dw 0xAA55
