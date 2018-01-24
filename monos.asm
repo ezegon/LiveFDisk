@@ -29,7 +29,6 @@ loop_menu:
     jmp loop_menu
 ;----------------------------------¡
 
-
 ;----------------------------------!
 general:
     xor ax, ax ;Clear ax
@@ -54,7 +53,8 @@ read_sectors:
     inc byte [partition_count] ;Update count
     cmp byte [partition_count], 5; Check if last partition
     mov si, [es:bx]
-    call print_byte
+    mov ax, si
+    call print_int
     jmp loop_menu
     
 
@@ -90,7 +90,6 @@ _done:
 
 ;----------------------------------¡
 
-
 ;----------------------------------!
 ;Print Byte Function
 ; si = Byte to print
@@ -100,14 +99,13 @@ print_byte:
 	;~ add byte [si], $30
 	
 _print_handler_byte:
-	lodsb
+	mov ax, si
 	mov ah, 0x0E
 	int 0x10
 	jmp _done
 	
     
 ;----------------------------------¡
-
 
 ;----------------------------------!
 ;Clear String Function
@@ -124,7 +122,44 @@ clear_screen:
     ret
  
 ;----------------------------------¡
-    
+
+;----------------------------------¡
+
+print_int:
+	pusha
+	xor si, si
+
+loop:
+	mov dx, $0
+	mov bx, $10
+	div bx ;The result of the division is stored in AX and the remainder in DX.
+	add dx, $30 ;30 is Hex
+	push dx
+	inc si
+	cmp ax, $0
+	je next_int
+	jmp loop
+
+next_int:
+	cmp si, $0
+	je exit_int
+	dec si
+	pop ax
+	mov ah, 0x0E
+	int 0x10
+	jmp  next_int
+
+exit_int:
+	mov al, 0x0D
+    int 0x10
+    mov al, 0x0A
+    int 0x10
+	popa
+	ret
+
+;----------------------------------¡
+
+;----------------------------------¡    
 
 ;Variables
 partition_count db 0
