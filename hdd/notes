@@ -1,0 +1,6 @@
+General Info
+Partition N - Status - Partition Type - Number of sectors in partition
+counter - es:bx 0:0 - es:bx+4 - es:bx+12
+
+Detail Info
+Partition N- Cilinder - Head - Sectors
