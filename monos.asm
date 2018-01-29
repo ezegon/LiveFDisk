@@ -47,16 +47,73 @@ general:
     mov ah, 0x03
     mov si, header
     call print_string
+    mov bx, 0x01AE
     
-read_sectors:
-    mov bx, 0x01BE
-    inc byte [partition_count] ;Update count
-    cmp byte [partition_count], 5; Check if last partition
-    mov si, [es:bx]
-    mov ax, si
-    call print_int
-    jmp loop_menu
+read_partition_table:
+	add bx, 0x10
+    cmp bx, 0x01EE
+	jg partition_tables_done
+
+read_partition_status:
+	movzx si, byte [es:bx]
+	call print_int
+	
+read_partition_first_head:
+	movzx si, byte [es:bx+1]
+	call print_int
+	
+read_partition_first_sector:
+	movzx si, byte [es:bx+2]
+	push si
+    shl si, $2
+	ror si, $2
+	call print_int
+
+read_partition_first_cylinder:
+	pop si
+	shr si, $6
+	shl si, $8
+	movzx dx, byte [es:bx+3]
+	or  si, dx
+	call print_int
+	xor si, si
+	
+read_partition_type:
+	movzx si, byte [es:bx+4]
+	call print_int
+	
+read_partition_last_head:
+	movzx si, byte [es:bx+5]
+	call print_int
+	
+read_partition_last_sector:
+	movzx si, byte [es:bx+6]
+	push si
+    shl si, $2
+	ror si, $2
+	call print_int
+
+read_partition_last_cylinder:
+	pop si
+	shr si, $6
+	shl si, $8
+	movzx dx, byte [es:bx+7]
+	or  si, dx
+	call print_int
+	xor si, si
     
+step_done:
+	push ax
+	mov ah, 0x0E
+	mov al, 0x0D
+    int 0x10
+    mov al, 0x0A
+    int 0x10
+    pop ax
+    jmp read_partition_table
+    
+partition_tables_done:
+	jmp loop_menu
 
 reading_error:
     mov si, errorreading
@@ -125,8 +182,9 @@ clear_screen:
 
 ;----------------------------------¡
 
-print_int:
+print_int: ;prints in int whatever is in AX
 	pusha
+	mov ax, si
 	xor si, si
 
 loop:
@@ -150,10 +208,9 @@ next_int:
 	jmp  next_int
 
 exit_int:
-	mov al, 0x0D
-    int 0x10
-    mov al, 0x0A
-    int 0x10
+	mov ah, 0x0E
+	mov al, 0x20
+	int 0x10
 	popa
 	ret
 
