@@ -65,14 +65,16 @@ read_partition_first_head:
 read_partition_first_sector:
 	movzx si, byte [es:bx+2]
 	push si
-    shl si, $2
-	ror si, $2
+    shl si, 2
+	ror si, 2
 	call print_int
 
 read_partition_first_cylinder:
+    xor si, si
 	pop si
-	shr si, $6
-	shl si, $8
+	shr si, 6
+	shl si, 8
+	xor dx, dx
 	movzx dx, byte [es:bx+3]
 	or  si, dx
 	call print_int
@@ -89,14 +91,14 @@ read_partition_last_head:
 read_partition_last_sector:
 	movzx si, byte [es:bx+6]
 	push si
-    shl si, $2
-	ror si, $2
+    shl si, 2
+	ror si, 2
 	call print_int
 
 read_partition_last_cylinder:
 	pop si
-	shr si, $6
-	shl si, $8
+	shr si, 6
+	shl si, 8
 	movzx dx, byte [es:bx+7]
 	or  si, dx
 	call print_int
@@ -188,18 +190,18 @@ print_int: ;prints in int whatever is in AX
 	xor si, si
 
 loop:
-	mov dx, $0
-	mov bx, $10
+	mov dx, 0
+	mov bx, 10
 	div bx ;The result of the division is stored in AX and the remainder in DX.
-	add dx, $30 ;30 is Hex
+	add dx, 0x30 ;30 is Hex
 	push dx
 	inc si
-	cmp ax, $0
+	cmp ax, 0
 	je next_int
 	jmp loop
 
 next_int:
-	cmp si, $0
+	cmp si, 0
 	je exit_int
 	dec si
 	pop ax
