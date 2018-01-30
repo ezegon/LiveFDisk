@@ -103,6 +103,11 @@ read_partition_last_cylinder:
 	or  si, dx
 	call print_int
 	xor si, si
+
+read_number_of_sectors:
+	mov si, [es:bx+12]
+	mov si, big_number
+	
     
 step_done:
 	push ax
@@ -112,7 +117,6 @@ step_done:
     mov al, 0x0A
     int 0x10
     pop ax
-    jmp read_partition_table
     
 partition_tables_done:
 	jmp loop_menu
@@ -189,7 +193,7 @@ print_int: ;prints in int whatever is in AX
 	mov ax, si
 	xor si, si
 
-loop:
+loop_int:
 	mov dx, 0
 	mov bx, 10
 	div bx ;The result of the division is stored in AX and the remainder in DX.
@@ -198,7 +202,7 @@ loop:
 	inc si
 	cmp ax, 0
 	je next_int
-	jmp loop
+	jmp loop_int
 
 next_int:
 	cmp si, 0
@@ -219,11 +223,137 @@ exit_int:
 ;----------------------------------¡
 
 ;----------------------------------¡    
+;Print Hexa
+
+print_hex:
+	pusha
+	xor cx, cx
+	mov bx, [si]
+	mov dx, [si+2]
+	mov ah, 0x0E
+	
+loop_hex:
+	
+loop_hex_1:
+	cmp cx, 1
+	jge loop_hex_2
+	
+	mov al, bh
+	shr al, 4
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+	inc cx
+
+loop_hex_2:	
+	cmp cx, 2
+	jge loop_hex_3
+
+	mov al, bh
+	and al, 0xF
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+	inc cx	
+	
+loop_hex_3:
+	cmp cx, 3
+	jge loop_hex_4
+	
+	mov al, bl
+	shr al, 4
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+	inc cx
+	
+loop_hex_4:
+	cmp cx, 4
+	jge loop_hex_5
+	
+	mov al, bl
+	and al, 0xF
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+	inc cx
+	
+loop_hex_5:
+	cmp cx, 5
+	jge loop_hex_6
+	
+	mov al, dh
+	shr al, 4
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+	inc cx
+	
+loop_hex_6:
+	cmp cx, 6
+	jge loop_hex_7
+	
+	mov al, dh
+	and al, 0xF
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+	inc cx
+	
+loop_hex_7:
+	cmp cx, 7
+	jge loop_hex_8
+	
+	mov al, dl
+	shr al, 4
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+	inc cx
+
+loop_hex_8:	
+	mov al, dl
+	and al, 0xF
+	
+	add al, 0x30
+	cmp al, 0x3A
+	jge char_hex
+	
+	int 0x10
+
+char_hex:
+	add al, 7
+	int 0x10
+	inc cx
+	jmp loop_hex
+
+;----------------------------------¡
+
+;----------------------------------¡    
 
 ;Variables
-partition_count db 0
-row db 0
-column db 0
+big_number dd 0x234589A
 
 ;Messages
 welcome db "Welcome to monOS",0
