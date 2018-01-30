@@ -1,5 +1,4 @@
 [BITS 16]
-[ORG 0x7C00]
 
 section .text
 global menu
@@ -7,7 +6,13 @@ global menu
 ;----------------------------------!
 ;Main menu
 menu:
+    mov sp, 0x8000
     xor ax,ax
+    mov ss, ax
+    
+    jmp loop_menu
+
+loop_menu:
     mov al, 0x03
     int 0x10
     
@@ -17,9 +22,6 @@ menu:
     mov si, option1
     call print_string
 
-    jmp loop_menu
-
-loop_menu:
     mov ah, 0x0
     int 0x16
     
@@ -362,5 +364,4 @@ errorreading db "Error reading from disk",0
 header db "Partition N          Status          Partition Type          Number of sectors"
     
 ;END NO TOCAR
-times 510-($-$$) db 0
-dw 0xAA55
+times 0x800-($-$$) db 0
