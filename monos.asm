@@ -125,6 +125,36 @@ partition_tables_done:
     mov al, 0x0A
     int 0x10
     pop ax
+    
+    ;-----TESTING ZONE-----;    
+    
+    mov si, 0
+    call partition_type
+
+    mov si, 1
+    call partition_type
+
+    mov si, 2
+    call partition_type
+
+    mov si, 0x83
+    call partition_type
+
+    mov si, 4
+    call partition_type
+
+    mov si, 5
+    call partition_type
+
+    mov si, 0x0E
+    call partition_type
+
+    mov si, 7
+    call partition_type
+
+    
+    ;---END TESTING ZONE---;
+    
 	jmp loop_menu
 
 reading_error:
@@ -133,7 +163,7 @@ reading_error:
     jmp loop_menu
 
 %include "mprint.asm"    
-
+%include "msysid.asm"
 ;section .data
 ;Variables
 	big_number dd 0x6432A
