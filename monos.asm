@@ -12,8 +12,8 @@ menu:
     mov ss, ax
 
     mov si, welcome
-    call print_string
-    
+;    call print_string
+    call read_char_from_string    
 
 loop_menu:
     
@@ -133,8 +133,13 @@ reading_error:
     call print_string
     jmp loop_menu
 
+generic_end:
+    popa
+    ret
+
 %include "mprint.asm"    
 %include "msysid.asm"
+%include "mvideo.asm"
 ;section .data
 ;Variables
 	big_number dd 0x6432A
