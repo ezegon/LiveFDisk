@@ -12,19 +12,28 @@ menu:
     mov ss, ax
 
     mov si, welcome
-;    call print_string
-    call read_char_from_string    
+    call print_string
+    ;call read_char_from_string    
 
 loop_menu:
     
     mov si, option1
     call print_string
-
+	
+	mov di, 0
+	mov si, 0
+	mov dl, 'A'
+	call print_char_at_pos
+	
+	
     mov ah, 0x0
     int 0x16
     
     cmp al, 0x31
     je general
+	
+	cmp al, 0x32
+	je clearscreen
     
     jmp loop_menu
 ;----------------------------------¡
