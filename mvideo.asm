@@ -23,32 +23,59 @@ loop_rcfs:
     
 print_char_at_pos:
 	pusha
+;di: pos x, si: pos y, dl: char
+;there are 80 characters per line, each character takes 2 bits
 	xor bx, bx
-	
-	mov al, 80
-	mul si
-	add ax, 0xb800
-	mov es, ax
-	mov al, 2
-	mul di
-	mov bx, ax
+    push dx
+
+    mov ax, 2
+    mul di
+    mov di, ax
+
+    mov ax, 160
+    mul si
+    mov si, ax
+
+	mov ax, 0xb800
+    mov es, ax
+    add bx, di
+    add bx, si
+
+    pop dx
 	mov al, dl
-	mov ah, 0x40
+	mov ah, 0x01
 	mov [es:bx], ax
 	
 	jmp generic_end
 	
 clearscreen:
     pusha
-	mov cx, 80
-	
-loop_clearscreen:
-	mov ax, 0xb800
-    mov es, ax
-	mov al, 'A'
-	mov ah, 0x40
-    mov [es:bx], ax
-    add bx, 2
-    loop loop_clearscreen
-	
-	jmp generic_end
+    
+    mov di, 0
+    mov si, 0
+    mov dl, ' '	
+    mov cx, 2000
+loop_clrscrn:
+    call print_char_at_pos
+    inc di
+    cmp di, 80
+    je addy
+compare:
+    loop loop_clrscrn
+    jmp generic_end    
+addy:
+    xor di, di
+    inc si
+    jmp compare
+
+
+
+
+
+
+
+
+
+
+
+

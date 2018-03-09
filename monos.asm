@@ -10,7 +10,7 @@ menu:
     mov sp, 0x8000
     xor ax,ax
     mov ss, ax
-
+    
     mov si, welcome
     call print_string
     ;call read_char_from_string    
@@ -18,13 +18,7 @@ menu:
 loop_menu:
     
     mov si, option1
-    call print_string
-	
-	mov di, 0
-	mov si, 0
-	mov dl, 'A'
-	call print_char_at_pos
-	
+    call print_string	
 	
     mov ah, 0x0
     int 0x16
@@ -37,7 +31,6 @@ loop_menu:
     
     jmp loop_menu
 ;----------------------------------¡
-
 ;----------------------------------!
 general:
     xor ax, ax ;Clear ax
