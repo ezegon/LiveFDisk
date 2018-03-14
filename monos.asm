@@ -11,14 +11,15 @@ menu:
     xor ax,ax
     mov ss, ax
     
-    mov si, welcome
-    call print_string
-    ;call read_char_from_string    
+	call clearscreen
+	
+    mov di, welcome
+    call print_string_at_pos   
 
 loop_menu:
     
-    mov si, option1
-    call print_string	
+    mov di, option1
+    call print_string_at_pos	
 	
     mov ah, 0x0
     int 0x16
@@ -144,7 +145,8 @@ generic_end:
 %include "mvideo.asm"
 ;section .data
 ;Variables
-	big_number dd 0x6432A
+	cursor_x dw 0
+	cursor_y dw	0
 
 ;Messages
 	welcome db "Welcome to MonOS!!",0
