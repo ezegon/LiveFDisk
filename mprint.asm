@@ -1,83 +1,68 @@
-
-;----------------------------------¡
-
-;----------------------------------!
-;Print String Function
-; si = string to print
-
-print_string:
-    pusha ;pushea todos los registros al stack
-    
-loop_string:
-    lodsb ; copia en al lo que contiene la direccion que tiene si
-    cmp al, 0
-    je exit_string
-    mov ah, 0x0E
-    int 0x10
-    jmp loop_string
-
-exit_string:
-    mov al, 0x0D
-    int 0x10
-    mov al, 0x0A
-    int 0x10
-    popa
-    ret
-
-;----------------------------------¡
-
-;----------------------------------!
-;Print Byte Function
-; si = Byte to print
-
-print_byte:
-	pusha
-	;~ add byte [si], $30
-	
-loop_byte:
-	mov ax, si
-	mov ah, 0x0E
-	int 0x10
-	jmp loop_byte
-	
-exit_byte:
-    mov al, 0x0D
-    int 0x10
-    mov al, 0x0A
-    int 0x10
-    popa
-    ret
-    
-;----------------------------------¡
-
-;----------------------------------!
-;Clear String Function
-
-clear_screen:
-    popa
-    mov ah, 0x06
-    mov al, 0x0
-    mov bh, 0x07
-    mov cx, 0x0
-    mov dx, 0x184f
-    int 0x10
-    pusha
-    ret
- 
 ;----------------------------------¡
 
 ;----------------------------------¡
 ;print_int
 
-print_int: ;prints in int whatever is in AX
+;Prints in int whatever is pointed by SI in memory, CX must contain the length (In bytes) of the int
+print_int_from_memory:
+    pusha
+    
+loop_int_:
+    xor ax, ax
+    lodsb
+    loop into_digit
+    movzx cx, [int_digits]
+    mov si, cx
+    call print_int
+    jmp print_int_
+    ret
+    
+into_digit:
+    xor dx, dx
+    mov bx, 10
+    div bx
+    add dx, '0'
+    ;~ push dx
+    ;~ xor dx, dx
+    ;~ inc byte [int_digits]
+    cmp ax, 0
+    je add_digit
+    ;~ je loop_int_
+    xor dx, dx
+    jmp into_digit
+    
+add_digit:
+    push dx
+    xor dx, dx
+    inc byte [int_digits]
+    jmp loop_int_
+    
+print_int_:
+    ;~ call print_canada
+    xor dx, dx
+    pop dx
+    call print_char_at_pos
+    call increase_cursor_pos
+    loop print_int_
+    
+exit_int_:
+	call increase_cursor_pos
+	popa
+	ret
+
+;Prints in int whatever is pointed by SI in memory, CX must contain the length (In bytes) of the int
+print_int:
 	pusha
-	mov ax, si
-	xor si, si
+    xor ax, ax
+    mov ax, si
+    
+    xor si, si
+    xor bx, bx
 
 loop_int:
-	mov dx, 0
-	mov bx, 10
-	div bx ;The result of the division is stored in AX and the remainder in DX.
+    xor dx, dx
+    mov bx, 10
+	div bx       ;The result of the division is stored in AX and the remainder in DX.
 	add dx, 0x30 ;30 is Hex
 	push dx
 	inc si
@@ -85,19 +70,18 @@ loop_int:
 	je next_int
 	jmp loop_int
 
-next_int:
+next_int: 
 	cmp si, 0
 	je exit_int
 	dec si
 	pop ax
-	mov ah, 0x0E
-	int 0x10
-	jmp  next_int
+    mov dl, al
+    call print_char_at_pos
+	call increase_cursor_pos
+    jmp  next_int
 
 exit_int:
-	mov ah, 0x0E
-	mov al, 0x20
-	int 0x10
+	call increase_cursor_pos
 	popa
 	ret
 
@@ -109,54 +93,73 @@ exit_int:
 
 print_hex:
 	pusha
+    mov bx, cx
 	xor cx, cx
-	xor bx, bx
+	;~ xor bx, bx
 	xor dx, dx
-	mov ah, 0x0E
-	
+
 loop_hex:
+    xor ax, ax
 	lodsb
 	movzx dx, al
 	
-	and dl, 0x0F
-	shr al, 4
+	and dl, 0x0F ;Sets to 0 the higher 4 bits of dl (Keep the lower part)
+	shr al, 4    ;Sets to 0 the higher 4 bits of al (Keep the high part)
 	
 	add dl, 0x30
 	add al, 0x30
 	
+    xor dh, dh
 	push dx
+    xor ah, ah
 	push ax
 
 	add cx, 2
-	cmp cx, 8
-	je printing_hex
+	cmp cx, bx
+	jge printing_hex
 	jmp loop_hex
 	
 printing_hex:
 	cmp cx, 0
 	je exit_hex
+    
+    xor ax, ax
 	pop ax
-	cmp al, 0x3A
+	cmp ax, 0x3A
 	jge char_hex
-	mov ah, 0x0E
-	int 0x10
+    xor dx, dx
+    mov dl, al
+	call print_char_at_pos
+    call increase_cursor_pos
 	dec cx
 	jmp  printing_hex
 
 char_hex:
 	add al, 7
-	mov ah, 0x0E
-	int 0x10
+    xor dx, dx
+    mov dl, al
+	call print_char_at_pos
+    call increase_cursor_pos
 	dec cx
 	jmp  printing_hex
 	
 exit_hex:
-	mov ah, 0x0E
-	mov al, 0x20
-	int 0x10
+	;~ mov ah, 0x0E
+	;~ mov al, 0x20
+	;~ int 0x10
+    call increase_cursor_pos
 	popa
 	ret
 
 ;----------------------------------¡
 
 ;----------------------------------¡    
+;Print Canada
+
+print_canada:
+    push di
+    mov di, canada
+    call print_string_at_pos
+    call new_line_generic
+    pop di
+    ret

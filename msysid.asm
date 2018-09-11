@@ -14,30 +14,31 @@ partition_type_tag:
 	je print_partition_type
 	cmp cx, [n_types] ;We check if we have already compared with all the stored values
 	je unknown_type
-	dec cx
+	inc cx
 
-partition_type_loop: ;Cycle until this type ends since it isn't the right type
-	lodsb
-	cmp al, 0 
-	jne partition_type_loop
-	jmp partition_type_tag
+partition_type_loop: ;Cycle until this partition type ends since it isn't the right type
+	lodsb ;Load next charecter within type
+	cmp al, 0 ;See if it's the last
+	jne partition_type_loop ;If it isn't we keep going
+	jmp partition_type_tag ;Then we succesfuly skiped the type
 
 unknown_type:
 	mov si, unknown
 	
 print_partition_type:
-	lodsb
-	cmp al,0
-	je partition_type_done
-	mov ah, 0x0E
-	int 0x10
-	jmp print_partition_type
+	;~ lodsb
+	;~ cmp al,0
+	;~ je partition_type_done
+	;~ mov ah, 0x0E
+	;~ int 0x10
+	;~ jmp print_partition_type
+
+    mov di, si
+    call print_string_at_pos
 	
 partition_type_done:
-	mov al, 0x20
-	mov ah, 0x0E
-	int 0x10
-	popa
+	call increase_cursor_pos
+    popa
 	ret
 
 partition_types db 0x00,"Empty",0
@@ -92,7 +93,7 @@ partition_types db 0x00,"Empty",0
 				db 0xee,"EFI GPT Disk",0
 				db 0xef,"EFI System Parition",0
 				db 0xfb,"VMWare File System",0
-				db 0xfc,"VMWare Swap",0 ;52
+				db 0xfc,"VMWare Swap",0 ;52 starting @ 0
 				
 n_types db 52
 				
