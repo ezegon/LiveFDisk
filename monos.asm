@@ -4,6 +4,7 @@
 section .text
 	global menu
 
+
 ;----------------------------------!
 ;Main menu
 menu:
@@ -17,39 +18,47 @@ menu:
     mov dl, 80
     int 0x10
     
-	call clearscreen
+
+    
+    ;~ mov dl, [dummy]
+    ;~ mov di, 0
+    ;~ mov si, 0
+    ;~ call print_char_at_pos
+    ;~ inc dl
+    ;~ mov [dummy], dl
 	
-    mov di, welcome
-    call print_string_at_pos
-    call new_line_generic
+    ;~ mov di, welcome
+    ;~ call print_string_at_pos
+    ;~ call new_line_generic
 
 loop_menu:
     
-    mov di, option1
-    call print_string_at_pos
-    call new_line_generic
+    ;~ mov di, option1
+    ;~ call print_string_at_pos
+    ;~ call new_line_generic
 	
-    mov di, option2
-    call print_string_at_pos
-    call new_line_generic
+    ;~ mov di, option2
+    ;~ call print_string_at_pos
+    ;~ call new_line_generic
     
     mov ah, 0x00
     int 0x16; Get keystroke
-    
-    cmp al, 0x31; 1 in ASCII
-    je opt_1
-	
-	cmp al, 0x32; 2 in ASCII
-	je opt_2
-    
-    jmp loop_menu
-    
-opt_1:
-    jmp general
-    
-opt_2:
     call clearscreen
-    jmp loop_menu
+    
+    ;~ cmp al, 0x31; 1 in ASCII
+    ;~ je opt_1
+	
+	;~ cmp al, 0x32; 2 in ASCII
+	;~ je opt_2
+    
+    ;~ jmp loop_menu
+    
+;~ opt_1:
+    ;~ jmp general
+    
+;~ opt_2:
+    ;~ call clearscreen
+    ;~ jmp loop_menu
     
 ;----------------------------------¡
 ;----------------------------------!
@@ -68,13 +77,12 @@ general:
     mov dl, 0x80 ;HDD #0
 
     xor bx, bx
-    mov bx, 0x9000 ;Save buffer in 0x9000
+    mov bx, 0xf000 ;Save buffer in 0x9000
     mov es, bx
     xor bx, bx ;Clear bx
     int 0x13 ;Drives interrupt
     jc reading_error
     
-    ;~ mov ah, 0x03
     mov di, header
     call print_string_at_pos
     call new_line_generic
@@ -91,7 +99,14 @@ read_partition_table:
     call print_hex
 
 read_partition_status:
-	movzx si, byte [es:bx]
+    xor si, si
+	mov si, 0xf1be
+    ;~ add si, 0x9000
+    ;~ sub byte [si], 191
+    ;~ mov dl, si
+    ;~ mov di, 0
+    ;~ mov si, 0
+    ;~ call print_char_at_pos
     mov cx, 2
 	call print_hex ;Should this be printed as Hex?
 	
@@ -120,9 +135,7 @@ read_partition_first_cylinder:
 read_partition_type:
 	movzx si, byte [es:bx+4]
 	call partition_type
-    ;~ mov cx, 2
-    ;~ call print_hex
-	;~ call print_int
+ 
 	
 read_partition_last_head:
 	movzx si, byte [es:bx+5]
@@ -158,29 +171,30 @@ partition_tables_done:
 reading_error:
     mov di, errorreading
     call print_string_at_pos
+    
     jmp loop_menu
-
 generic_end:
     popa
     ret
 
+
 %include "mprint.asm"    
 %include "msysid.asm"
 %include "mvideo.asm"
-;section .data
+section .data
 ;Variables
 	cursor_x dw 0
 	cursor_y dw	0
     quotient db 0
     
     int_digits db 0
-    dummy db 0
+    dummy db 48
     
 ;Messages
     canada db "Canada",0
 	welcome db "Welcome to MonOS!!",0
-	option1 db "1-Show partition table",0
-	option2 db "2-Clear Screen",0
+	;~ option1 db "1-Show partition table",0
+	;~ option2 db "2-Clear Screen",0
 	errorreading db "Error reading from disk",0
 	header db "Status - Fst Head - Fst Sector - Fst Cylinder - Partition type - N. Sectors",0
 
